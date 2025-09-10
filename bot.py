@@ -5,7 +5,6 @@ import os
 import time
 
 # --- CONFIGURAÇÕES ---
-# A lista de obras que nosso robô vai vigiar
 URLS_DAS_OBRAS = [
     "https://gatotoons.online/obra/invocador-solitario-de-nivel-sss",
     "https://gatotoons.online/obra/poderes-perdidos-restaurados-desbloqueando-uma-nova-habilidade-todos-os-dias",
@@ -19,17 +18,17 @@ WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL')
 # --- FUNÇÕES DO ROBÔ ---
 
 def carregar_memoria():
-    """Carrega o dicionário com o último capítulo anunciado de cada obra."""
+    """Carrega o set com os links dos capítulos já conhecidos."""
     try:
         with open(MEMORIA_ARQUIVO, 'r') as f:
-            return json.load(f)
+            return set(json.load(f))
     except (FileNotFoundError, json.JSONDecodeError):
-        return {}
+        return set()
 
 def salvar_memoria(memoria_atualizada):
     """Salva a memória atualizada no arquivo."""
     with open(MEMORIA_ARQUIVO, 'w') as f:
-        json.dump(memoria_atualizada, f, indent=4)
+        json.dump(list(memoria_atualizada), f, indent=4)
 
 def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra):
     """Monta e envia a mensagem de anúncio para o Discord."""
@@ -61,9 +60,13 @@ def main():
     print("Iniciando verificação de lançamentos...")
     
     memoria_de_lancamentos = carregar_memoria()
-    houve_atualizacao = False
+    primeira_execucao = not memoria_de_lancamentos
 
-    # Itera sobre cada obra da nossa lista
+    if primeira_execucao:
+        print("PRIMEIRA EXECUÇÃO DETECTADA: Populando a memória inicial sem anunciar...")
+    
+    novos_links_encontrados = set()
+
     for url_obra in URLS_DAS_OBRAS:
         print(f"\nVerificando obra: {url_obra.split('/')[-1]}")
         try:
@@ -71,46 +74,51 @@ def main():
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             print(f"  -> Erro ao acessar a página da obra: {e}")
-            continue # Pula para a próxima obra
+            continue
         
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Encontra o link do capítulo mais recente na página
-        capitulo_mais_recente_tag = soup.select_one('section h2:-soup-contains("Capítulos") + div a')
+        # Extrai informações gerais da obra
+        titulo_obra = soup.select_one('h1').text.strip()
+        imagem_obra = soup.select_one('aside img')['src']
         
-        if not capitulo_mais_recente_tag:
+        # Encontra TODOS os links de capítulos na página
+        todos_os_capitulos_tags = soup.select('section h2:-soup-contains("Capítulos") + div a')
+        
+        if not todos_os_capitulos_tags:
             print("  -> Não foi possível encontrar a lista de capítulos nesta página.")
             continue
 
-        link_capitulo_atual = capitulo_mais_recente_tag['href']
-        
-        # Compara com o que temos na memória
-        ultimo_link_conhecido = memoria_de_lancamentos.get(url_obra)
+        for cap_tag in todos_os_capitulos_tags:
+            link_capitulo = cap_tag['href']
+            
+            # Se o link do capítulo não está na memória, é novo!
+            if link_capitulo not in memoria_de_lancamentos:
+                
+                if primeira_execucao:
+                    # No modo "Primeira Vez", apenas guardamos o link
+                    novos_links_encontrados.add(link_capitulo)
+                else:
+                    # No modo "Normal", anunciamos e depois guardamos
+                    print(f"  -> NOVO CAPÍTULO DETECTADO! Link: {link_capitulo}")
+                    
+                    numero_capitulo = cap_tag.select_one('span').text.strip()
+                    link_completo = f"https://gatotoons.online{link_capitulo}"
+                    
+                    enviar_anuncio_discord(titulo_obra, numero_capitulo, link_completo, imagem_obra)
+                    novos_links_encontrados.add(link_capitulo)
+                    time.sleep(2) # Pausa entre anúncios
 
-        if link_capitulo_atual != ultimo_link_conhecido:
-            print(f"  -> NOVO CAPÍTULO DETECTADO! Link: {link_capitulo_atual}")
-            houve_atualizacao = True
-            
-            # Extrai as outras informações para o anúncio
-            titulo_obra = soup.select_one('h1').text.strip()
-            numero_capitulo = capitulo_mais_recente_tag.select_one('span').text.strip()
-            imagem_obra = soup.select_one('aside img')['src']
-
-            # Envia o anúncio
-            link_completo_capitulo = f"https://gatotoons.online{link_capitulo_atual}"
-            enviar_anuncio_discord(titulo_obra, numero_capitulo, link_completo_capitulo, imagem_obra)
-            
-            # Atualiza a memória com o link do novo capítulo
-            memoria_de_lancamentos[url_obra] = link_capitulo_atual
-            
-            time.sleep(1) # Pausa para não sobrecarregar o Discord
+    if novos_links_encontrados:
+        # Adiciona os novos links à memória existente e salva
+        memoria_final = memoria_de_lancamentos.union(novos_links_encontrados)
+        salvar_memoria(memoria_final)
+        if primeira_execucao:
+            print(f"\nMemória inicial populada com {len(novos_links_encontrados)} capítulos. Nenhum anúncio foi enviado.")
         else:
-            print("  -> Sem novidades.")
-
-    # Se houve qualquer atualização, salva o novo estado da memória
-    if houve_atualizacao:
-        print("\nSalvando memória atualizada...")
-        salvar_memoria(memoria_de_lancamentos)
+            print(f"\nMemória atualizada com {len(novos_links_encontrados)} novo(s) capítulo(s).")
+    else:
+        print("\nNenhum novo capítulo encontrado.")
 
     print("\nVerificação concluída.")
 
