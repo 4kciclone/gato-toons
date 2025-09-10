@@ -48,9 +48,6 @@ def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra, role_id
         print("ERRO: A URL do Webhook não foi configurada!")
         return
 
-    # Cria a menção do cargo. Se não houver ID, a string fica vazia.
-    content_mention = f"<@&{role_id}>" if role_id else ""
-
     embed = {
         "title": f"🔥 {titulo} - {capitulo} 🔥",
         "description": "Um novo capítulo já está disponível no site!\n\n**Leia agora:**",
@@ -58,18 +55,28 @@ def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra, role_id
         "color": 5814783,
         "image": { "url": f"https://gatotoons.online{imagem_obra}" }
     }
+    
     payload = {
-        "content": content_mention, # A menção vai aqui, fora do embed
         "username": "Anunciador Gato Toons",
         "avatar_url": "https://i.imgur.com/uB1Q1a2.png",
         "embeds": [embed]
     }
+
+    # Adiciona a menção do cargo APENAS se o ID for válido
+    # Verificamos se role_id não é None e se é uma string de dígitos
+    if role_id and isinstance(role_id, str) and role_id.isdigit():
+        payload["content"] = f"<@&{role_id}>"
+    else:
+        print(f"AVISO: ID de cargo inválido ou não encontrado para a obra '{titulo}'. Enviando sem menção.")
+
     try:
         response = requests.post(WEBHOOK_URL, json=payload, timeout=10)
         response.raise_for_status()
         print(f"Anúncio enviado: {titulo} - {capitulo}")
     except requests.exceptions.RequestException as e:
         print(f"Erro ao enviar anúncio para o Discord: {e}")
+        # Para depuração, vamos imprimir o que tentamos enviar
+        print("Payload que causou o erro:", json.dumps(payload, indent=2))
 
 def main():
     print("Iniciando verificação de lançamentos...")
