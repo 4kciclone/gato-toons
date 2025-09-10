@@ -15,6 +15,11 @@ URLS_DAS_OBRAS = [
 MEMORIA_ARQUIVO = "lancados.json"
 WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL')
 
+# Disfarce para se parecer com um navegador comum e evitar o erro 406
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+}
+
 # --- FUNÇÕES DO ROBÔ ---
 
 def carregar_memoria():
@@ -70,7 +75,8 @@ def main():
     for url_obra in URLS_DAS_OBRAS:
         print(f"\nVerificando obra: {url_obra.split('/')[-1]}")
         try:
-            response = requests.get(url_obra)
+            # Adicionamos o 'headers' para nos disfarçarmos
+            response = requests.get(url_obra, headers=HEADERS)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             print(f"  -> Erro ao acessar a página da obra: {e}")
@@ -79,8 +85,15 @@ def main():
         soup = BeautifulSoup(response.text, 'html.parser')
         
         # Extrai informações gerais da obra
-        titulo_obra = soup.select_one('h1').text.strip()
-        imagem_obra = soup.select_one('aside img')['src']
+        titulo_obra_tag = soup.select_one('h1')
+        imagem_obra_tag = soup.select_one('aside img')
+        
+        if not all([titulo_obra_tag, imagem_obra_tag]):
+            print("  -> Não foi possível encontrar título ou imagem da obra.")
+            continue
+            
+        titulo_obra = titulo_obra_tag.text.strip()
+        imagem_obra = imagem_obra_tag['src']
         
         # Encontra TODOS os links de capítulos na página
         todos_os_capitulos_tags = soup.select('section h2:-soup-contains("Capítulos") + div a')
@@ -102,7 +115,10 @@ def main():
                     # No modo "Normal", anunciamos e depois guardamos
                     print(f"  -> NOVO CAPÍTULO DETECTADO! Link: {link_capitulo}")
                     
-                    numero_capitulo = cap_tag.select_one('span').text.strip()
+                    numero_capitulo_tag = cap_tag.select_one('span')
+                    if not numero_capitulo_tag: continue
+                    
+                    numero_capitulo = numero_capitulo_tag.text.strip()
                     link_completo = f"https://gatotoons.online{link_capitulo}"
                     
                     enviar_anuncio_discord(titulo_obra, numero_capitulo, link_completo, imagem_obra)
