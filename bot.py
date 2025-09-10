@@ -5,6 +5,7 @@ import os
 import time
 
 # --- CONFIGURAÇÕES ---
+# A lista de obras que nosso robô vai vigiar
 URLS_DAS_OBRAS = [
     "https://gatotoons.online/obra/invocador-solitario-de-nivel-sss",
     "https://gatotoons.online/obra/poderes-perdidos-restaurados-desbloqueando-uma-nova-habilidade-todos-os-dias",
@@ -12,10 +13,18 @@ URLS_DAS_OBRAS = [
     "https://gatotoons.online/obra/eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente",
     "https://gatotoons.online/obra/depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas"
 ]
+
+OBRA_ROLE_MAP = {
+    "invocador-solitario-de-nivel-sss": "1415075549877112953",
+    "poderes-perdidos-restaurados-desbloqueando-uma-nova-habilidade-todos-os-dias": "1415075423674433587",
+    "conquistando-masmorras-com-copiar-e-colar": "1415075300412231830",
+    "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente": "1415075156187025539",
+    "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas": "1415073241399300227"
+}
+
 MEMORIA_ARQUIVO = "lancados.json"
 WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL')
 
-# Disfarce para se parecer com um navegador comum e evitar o erro 406
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 }
@@ -23,7 +32,6 @@ HEADERS = {
 # --- FUNÇÕES DO ROBÔ ---
 
 def carregar_memoria():
-    """Carrega o set com os links dos capítulos já conhecidos."""
     try:
         with open(MEMORIA_ARQUIVO, 'r') as f:
             return set(json.load(f))
@@ -31,15 +39,17 @@ def carregar_memoria():
         return set()
 
 def salvar_memoria(memoria_atualizada):
-    """Salva a memória atualizada no arquivo."""
     with open(MEMORIA_ARQUIVO, 'w') as f:
         json.dump(list(memoria_atualizada), f, indent=4)
 
-def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra):
-    """Monta e envia a mensagem de anúncio para o Discord."""
+def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra, role_id):
+    """Monta e envia a mensagem de anúncio, agora com o ID do cargo."""
     if not WEBHOOK_URL:
         print("ERRO: A URL do Webhook não foi configurada!")
         return
+
+    # Cria a menção do cargo. Se não houver ID, a string fica vazia.
+    content_mention = f"<@&{role_id}>" if role_id else ""
 
     embed = {
         "title": f"🔥 {titulo} - {capitulo} 🔥",
@@ -49,19 +59,19 @@ def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra):
         "image": { "url": f"https://gatotoons.online{imagem_obra}" }
     }
     payload = {
+        "content": content_mention, # A menção vai aqui, fora do embed
         "username": "Anunciador Gato Toons",
         "avatar_url": "https://i.imgur.com/uB1Q1a2.png",
         "embeds": [embed]
     }
     try:
-        response = requests.post(WEBHOOK_URL, json=payload)
+        response = requests.post(WEBHOOK_URL, json=payload, timeout=10)
         response.raise_for_status()
         print(f"Anúncio enviado: {titulo} - {capitulo}")
     except requests.exceptions.RequestException as e:
         print(f"Erro ao enviar anúncio para o Discord: {e}")
 
 def main():
-    """Função principal que orquestra todo o trabalho."""
     print("Iniciando verificação de lançamentos...")
     
     memoria_de_lancamentos = carregar_memoria()
@@ -75,8 +85,7 @@ def main():
     for url_obra in URLS_DAS_OBRAS:
         print(f"\nVerificando obra: {url_obra.split('/')[-1]}")
         try:
-            # Adicionamos o 'headers' para nos disfarçarmos
-            response = requests.get(url_obra, headers=HEADERS)
+            response = requests.get(url_obra, headers=HEADERS, timeout=20)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             print(f"  -> Erro ao acessar a página da obra: {e}")
@@ -84,7 +93,6 @@ def main():
         
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Extrai informações gerais da obra
         titulo_obra_tag = soup.select_one('h1')
         imagem_obra_tag = soup.select_one('aside img')
         
@@ -95,7 +103,6 @@ def main():
         titulo_obra = titulo_obra_tag.text.strip()
         imagem_obra = imagem_obra_tag['src']
         
-        # Encontra TODOS os links de capítulos na página
         todos_os_capitulos_tags = soup.select('section h2:-soup-contains("Capítulos") + div a')
         
         if not todos_os_capitulos_tags:
@@ -105,14 +112,11 @@ def main():
         for cap_tag in todos_os_capitulos_tags:
             link_capitulo = cap_tag['href']
             
-            # Se o link do capítulo não está na memória, é novo!
             if link_capitulo not in memoria_de_lancamentos:
                 
                 if primeira_execucao:
-                    # No modo "Primeira Vez", apenas guardamos o link
                     novos_links_encontrados.add(link_capitulo)
                 else:
-                    # No modo "Normal", anunciamos e depois guardamos
                     print(f"  -> NOVO CAPÍTULO DETECTADO! Link: {link_capitulo}")
                     
                     numero_capitulo_tag = cap_tag.select_one('span')
@@ -121,12 +125,15 @@ def main():
                     numero_capitulo = numero_capitulo_tag.text.strip()
                     link_completo = f"https://gatotoons.online{link_capitulo}"
                     
-                    enviar_anuncio_discord(titulo_obra, numero_capitulo, link_completo, imagem_obra)
+                    # Procura o ID do cargo no nosso mapa
+                    obra_slug = url_obra.split('/')[-1]
+                    role_id_para_mencionar = OBRA_ROLE_MAP.get(obra_slug)
+                    
+                    enviar_anuncio_discord(titulo_obra, numero_capitulo, link_completo, imagem_obra, role_id_para_mencionar)
                     novos_links_encontrados.add(link_capitulo)
-                    time.sleep(2) # Pausa entre anúncios
+                    time.sleep(2)
 
     if novos_links_encontrados:
-        # Adiciona os novos links à memória existente e salva
         memoria_final = memoria_de_lancamentos.union(novos_links_encontrados)
         salvar_memoria(memoria_final)
         if primeira_execucao:
