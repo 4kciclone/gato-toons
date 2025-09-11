@@ -128,8 +128,9 @@ def main():
                     
                     numero_capitulo_tag = cap_tag.select_one('span')
                     if not numero_capitulo_tag: continue
-                    
-                    numero_capitulo = numero_capitulo_tag.text.strip()
+
+                    texto_completo_cap = numero_capitulo_tag.text.strip()
+                    numero_capitulo = texto_completo_cap.split(' - ')[0].strip()
                     link_completo = f"https://gatotoons.online{link_capitulo}"
                     
                     # Procura o ID do cargo no nosso mapa
