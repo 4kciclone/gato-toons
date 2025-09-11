@@ -64,9 +64,9 @@ def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra, role_id
 
     # Adiciona a menção do cargo APENAS se o ID for válido
     # Verificamos se role_id não é None e se é uma string de dígitos
-    if role_id and isinstance(role_id, str) and role_id.isdigit():
+    #if role_id and isinstance(role_id, str) and role_id.isdigit():
         payload["content"] = f"<@&{role_id}>"
-    else:
+    #else:
         print(f"AVISO: ID de cargo inválido ou não encontrado para a obra '{titulo}'. Enviando sem menção.")
 
     try:
