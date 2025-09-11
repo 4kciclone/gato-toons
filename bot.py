@@ -53,7 +53,7 @@ def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra, role_id
         "description": "Um novo capítulo já está disponível no site!\n\n**Leia agora:**",
         "url": link_capitulo,
         "color": 5814783,
-        "image": { "url": f"https://gatotoons.online{imagem_obra}" }
+        #"image": { "url": f"https://gatotoons.online{imagem_obra}" }
     }
     
     payload = {
@@ -64,9 +64,9 @@ def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra, role_id
 
     # Adiciona a menção do cargo APENAS se o ID for válido
     # Verificamos se role_id não é None e se é uma string de dígitos
-    #if role_id and isinstance(role_id, str) and role_id.isdigit():
+    if role_id and isinstance(role_id, str) and role_id.isdigit():
         payload["content"] = f"<@&{role_id}>"
-    #else:
+    else:
         print(f"AVISO: ID de cargo inválido ou não encontrado para a obra '{titulo}'. Enviando sem menção.")
 
     try:
