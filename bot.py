@@ -11,7 +11,8 @@ URLS_DAS_OBRAS = [
     "https://gatotoons.online/obra/poderes-perdidos-restaurados-desbloqueando-uma-nova-habilidade-todos-os-dias",
     "https://gatotoons.online/obra/conquistando-masmorras-com-copiar-e-colar",
     "https://gatotoons.online/obra/eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente",
-    "https://gatotoons.online/obra/depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas"
+    "https://gatotoons.online/obra/depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas",
+    "https://gatotoons.online/obra/o-suporte-faz-tudo"
 ]
 
 OBRA_ROLE_MAP = {
@@ -19,7 +20,8 @@ OBRA_ROLE_MAP = {
     "poderes-perdidos-restaurados-desbloqueando-uma-nova-habilidade-todos-os-dias": "1415075423674433587",
     "conquistando-masmorras-com-copiar-e-colar": "1415075300412231830",
     "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente": "1415075156187025539",
-    "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas": "1415073241399300227"
+    "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas": "1415073241399300227",
+    "O Suporte Faz Tudo": "1416800403835720014"
 }
 
 MEMORIA_ARQUIVO = "lancados.json"
