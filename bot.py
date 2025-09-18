@@ -12,7 +12,9 @@ URLS_DAS_OBRAS = [
     "https://gatotoons.online/obra/conquistando-masmorras-com-copiar-e-colar",
     "https://gatotoons.online/obra/eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente",
     "https://gatotoons.online/obra/depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas",
-    "https://gatotoons.online/obra/o-suporte-faz-tudo"
+    "https://gatotoons.online/obra/o-suporte-faz-tudo",
+    "https://gatotoons.online/obra/a-99a-vida-do-aventureiro-mais-fraco-o-caminho-mais-rapido-do-mais-fraco-ao-mais-forte",
+    "https://gatotoons.online/obra/caminhante-do-reino-espiritual"
 ]
 
 OBRA_ROLE_MAP = {
@@ -21,7 +23,9 @@ OBRA_ROLE_MAP = {
     "conquistando-masmorras-com-copiar-e-colar": "1415075300412231830",
     "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente": "1415075156187025539",
     "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas": "1415073241399300227",
-    "O Suporte Faz Tudo": "1416800403835720014"
+    "O Suporte Faz Tudo": "1416800403835720014",
+    "Caminhante do Reino Espiritual": "1418317864359690262",
+    "A 99°  Vida do Aventureiro Mais Fraco: O Caminho Mais Rápido do Mais Fraco ao Mais Forte": "1418318233936597183"
 }
 
 MEMORIA_ARQUIVO = "lancados.json"
