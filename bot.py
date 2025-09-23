@@ -23,9 +23,9 @@ OBRA_ROLE_MAP = {
     "conquistando-masmorras-com-copiar-e-colar": "1415075300412231830",
     "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente": "1415075156187025539",
     "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas": "1415073241399300227",
-    "O Suporte Faz Tudo": "1416800403835720014",
-    "Caminhante do Reino Espiritual": "1418317864359690262",
-    "A 99°  Vida do Aventureiro Mais Fraco: O Caminho Mais Rápido do Mais Fraco ao Mais Forte": "1418318233936597183"
+    "o-suporte-faz-tudo": "1416800403835720014",
+    "caminhante-do-reino-espiritual": "1418317864359690262",
+    "a-99a-vida-do-aventureiro-mais-fraco-o-caminho-mais-rapido-do-mais-fraco-ao-mais-forte": "1418318233936597183"
 }
 
 MEMORIA_ARQUIVO = "lancados.json"
