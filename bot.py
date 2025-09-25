@@ -5,7 +5,6 @@ import os
 import time
 
 # --- CONFIGURAÇÕES ---
-# A lista de obras que nosso robô vai vigiar
 URLS_DAS_OBRAS = [
     "https://gatotoons.online/obra/invocador-solitario-de-nivel-sss",
     "https://gatotoons.online/obra/poderes-perdidos-restaurados-desbloqueando-uma-nova-habilidade-todos-os-dias",
@@ -49,17 +48,21 @@ def salvar_memoria(memoria_atualizada):
         json.dump(list(memoria_atualizada), f, indent=4)
 
 def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra, role_id):
-    """Monta e envia a mensagem de anúncio, agora com o ID do cargo."""
+    """Monta e envia a mensagem de anúncio, incluindo aviso VIP."""
     if not WEBHOOK_URL:
         print("ERRO: A URL do Webhook não foi configurada!")
         return
 
     embed = {
         "title": f"🔥 {titulo} - {capitulo} 🔥",
-        "description": "Um novo capítulo já está disponível no site!\n\n**Leia agora:**",
+        "description": (
+            "Um novo capítulo já está disponível no site!\n\n"
+            f"**Leia agora:** [Clique aqui]({link_capitulo})\n\n"
+            "🔔 **Obra Vip** — disponível para todos em **2 dias**!"
+        ),
         "url": link_capitulo,
-        "color": 5814783,
-        #"image": { "url": f"https://gatotoons.online{imagem_obra}" }
+        "color": 5814783
+        # "image": { "url": f"https://gatotoons.online{imagem_obra}" }
     }
     
     payload = {
@@ -68,12 +71,10 @@ def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra, role_id
         "embeds": [embed]
     }
 
-    # Adiciona a menção do cargo APENAS se o ID for válido
-    # Verificamos se role_id não é None e se é uma string de dígitos
     if role_id and isinstance(role_id, str) and role_id.isdigit():
         payload["content"] = f"<@&{role_id}>"
     else:
-        print(f"AVISO: ID de cargo inválido ou não encontrado para a obra '{titulo}'. Enviando sem menção.")
+        payload["content"] = "@everyone"
 
     try:
         response = requests.post(WEBHOOK_URL, json=payload, timeout=10)
@@ -81,7 +82,6 @@ def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra, role_id
         print(f"Anúncio enviado: {titulo} - {capitulo}")
     except requests.exceptions.RequestException as e:
         print(f"Erro ao enviar anúncio para o Discord: {e}")
-        # Para depuração, vamos imprimir o que tentamos enviar
         print("Payload que causou o erro:", json.dumps(payload, indent=2))
 
 def main():
@@ -133,13 +133,13 @@ def main():
                     print(f"  -> NOVO CAPÍTULO DETECTADO! Link: {link_capitulo}")
                     
                     numero_capitulo_tag = cap_tag.select_one('span')
-                    if not numero_capitulo_tag: continue
+                    if not numero_capitulo_tag: 
+                        continue
 
                     texto_completo_cap = numero_capitulo_tag.text.strip()
                     numero_capitulo = texto_completo_cap.split(' - ')[0].strip()
                     link_completo = f"https://gatotoons.online{link_capitulo}"
                     
-                    # Procura o ID do cargo no nosso mapa
                     obra_slug = url_obra.split('/')[-1]
                     role_id_para_mencionar = OBRA_ROLE_MAP.get(obra_slug)
                     
