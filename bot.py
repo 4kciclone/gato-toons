@@ -67,7 +67,7 @@ def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra, role_id
     
     payload = {
         "username": "Anunciador Gato Toons",
-        "avatar_url": "https://i.imgur.com/uB1Q1a2.png",
+        "avatar_url": "https://imgur.com/a/cgZ6dRC",
         "embeds": [embed]
     }
 
