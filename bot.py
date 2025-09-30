@@ -17,14 +17,38 @@ URLS_DAS_OBRAS = [
 ]
 
 OBRA_ROLE_MAP = {
-    "invocador-solitario-de-nivel-sss": "1415075549877112953",
-    "poderes-perdidos-restaurados-desbloqueando-uma-nova-habilidade-todos-os-dias": "1415075423674433587",
-    "conquistando-masmorras-com-copiar-e-colar": "1415075300412231830",
-    "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente": "1415075156187025539",
-    "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas": "1415073241399300227",
-    "o-suporte-faz-tudo": "1416800403835720014",
-    "caminhante-do-reino-espiritual": "1418317864359690262",
-    "a-99a-vida-do-aventureiro-mais-fraco-o-caminho-mais-rapido-do-mais-fraco-ao-mais-forte": "1418318233936597183"
+    "invocador-solitario-de-nivel-sss": {
+        "id": "1415075549877112953",
+        "nome": "Invocador Solitário de Nível SSS"
+    },
+    "poderes-perdidos-restaurados-desbloqueando-uma-nova-habilidade-todos-os-dias": {
+        "id": "1415075423674433587",
+        "nome": "Poderes Perdidos Restaurados"
+    },
+    "conquistando-masmorras-com-copiar-e-colar": {
+        "id": "1415075300412231830",
+        "nome": "Conquistando Masmorras"
+    },
+    "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente": {
+        "id": "1415075156187025539",
+        "nome": "Invencibilidade Passiva"
+    },
+    "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas": {
+        "id": "1415073241399300227",
+        "nome": "Login 30 Dias"
+    },
+    "o-suporte-faz-tudo": {
+        "id": "1416800403835720014",
+        "nome": "O Suporte Faz Tudo"
+    },
+    "caminhante-do-reino-espiritual": {
+        "id": "1418317864359690262",
+        "nome": "Caminhante do Reino Espiritual"
+    },
+    "a-99a-vida-do-aventureiro-mais-fraco-o-caminho-mais-rapido-do-mais-fraco-ao-mais-forte": {
+        "id": "1418318233936597183",
+        "nome": "99ª Vida do Aventureiro Mais Fraco"
+    }
 }
 
 MEMORIA_ARQUIVO = "lancados.json"
@@ -96,7 +120,10 @@ def main():
     novos_links_encontrados = set()
 
     for url_obra in URLS_DAS_OBRAS:
-        print(f"\nVerificando obra: {url_obra.split('/')[-1]}")
+        obra_slug = url_obra.split('/')[-1]
+        role_info = OBRA_ROLE_MAP.get(obra_slug)
+
+        print(f"\nVerificando obra: {obra_slug}")
         try:
             response = requests.get(url_obra, headers=HEADERS, timeout=20)
             response.raise_for_status()
@@ -113,7 +140,8 @@ def main():
             print("  -> Não foi possível encontrar título ou imagem da obra.")
             continue
             
-        titulo_obra = titulo_obra_tag.text.strip()
+        # Usa o nome do cargo no lugar do título do site
+        titulo_obra = role_info["nome"] if role_info else titulo_obra_tag.text.strip()
         imagem_obra = imagem_obra_tag['src']
         
         todos_os_capitulos_tags = soup.select('section h2:-soup-contains("Capítulos") + div a')
@@ -140,8 +168,7 @@ def main():
                     numero_capitulo = texto_completo_cap.split(' - ')[0].strip()
                     link_completo = f"https://gatotoons.online{link_capitulo}"
                     
-                    obra_slug = url_obra.split('/')[-1]
-                    role_id_para_mencionar = OBRA_ROLE_MAP.get(obra_slug)
+                    role_id_para_mencionar = role_info["id"] if role_info else None
                     
                     enviar_anuncio_discord(titulo_obra, numero_capitulo, link_completo, imagem_obra, role_id_para_mencionar)
                     novos_links_encontrados.add(link_capitulo)
