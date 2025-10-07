@@ -2,27 +2,22 @@ import requests
 import json
 import os
 import time
-from urllib.parse import urljoin, urlparse, parse_qs
+from urllib.parse import urljoin
 
 # --- CONFIGURAÇÕES ---
 BASE_URL = "https://gatotoons.online"
-# A MUDANÇA PRINCIPAL: Usamos o endpoint da API em vez de raspar o HTML
 API_ENDPOINT = "https://gatotoons.online/api/obras/detalhes.php?slug="
 
-# Lista de slugs de cada obra a ser monitorada. Mais simples que URLs completas.
+# Lista de slugs de cada obra a ser monitorada.
 SLUGS_DAS_OBRAS = [
-    "espinhos-de-calor",
-    "quando-a-filha-da-bruxa-acaba-com-a-maldi-o-do-protagonista-masculino",
-    "meu-corpo-foi-possu-do-por-algu-m",
-    "conquistando-masmorras-com-copiar-e-colar",
-    "caminhante-do-reino-espiritual",
-    "regress-o-da-espada-destruidora",
-    "para-meu-rude-homem-com-m-ltiplas-personalidades",
-    "invocador-solit-rio-de-n-vel-sss",
+    "espinhos-de-calor", "quando-a-filha-da-bruxa-acaba-com-a-maldi-o-do-protagonista-masculino",
+    "meu-corpo-foi-possu-do-por-algu-m", "conquistando-masmorras-com-copiar-e-colar",
+    "caminhante-do-reino-espiritual", "regress-o-da-espada-destruidora",
+    "para-meu-rude-homem-com-m-ltiplas-personalidades", "invocador-solit-rio-de-n-vel-sss",
     "poderes-perdidos-restaurados-desbloqueando-uma-nova-habilidade-todos-os-dias",
-    "o-suporte-faz-tudo",
-    "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente-",
-    "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas"
+    "o-suporte-faz-tudo", "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente-",
+    "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas",
+    "regress-o-da-espada-destruidora";
 ]
 
 OBRA_ROLE_MAP = {
@@ -34,7 +29,7 @@ OBRA_ROLE_MAP = {
     "o-suporte-faz-tudo": { "id": "1416800403835720014", "nome": "O Suporte Faz Tudo", "canal_destino": "CANAL_PRINCIPAL" },
     "caminhante-do-reino-espiritual": { "id": "1418317864359690262", "nome": "Caminhante do Reino Espiritual", "canal_destino": "CANAL_PRINCIPAL" },
     "a-99a-vida-do-aventureiro-mais-fraco-o-caminho-mais-rapido-do-mais-fraco-ao-mais-forte": { "id": "1418318233936597183", "nome": "99ª Vida do Aventureiro Mais Fraco", "canal_destino": "CANAL_PRINCIPAL" },
-    "regress-o-da-espada-destruidora": { "id": "ID_DO_CARGO_AQUI", "nome": "Regressão da Espada Destruidora", "canal_destino": "CANAL_PRINCIPAL" },
+    "regress-o-da-espada-destruidora": { "id": "1425128273444081807", "nome": "Regressão da Espada Destruidora", "canal_destino": "CANAL_PRINCIPAL" },
     "espinhos-de-calor": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Espinhos de Calor", "canal_destino": "CANAL_SECUNDARIO" },
     "meu-corpo-foi-possu-do-por-algu-m": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Meu Corpo foi Possuído por Alguém", "canal_destino": "CANAL_SECUNDARIO" },
     "o-sr-empregada-do-caf-clover": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "O Sr. Empregada do Café Clover", "canal_destino": "CANAL_SECUNDARIO" },
@@ -49,7 +44,7 @@ WEBHOOK_URLS = {
 }
 HEADERS = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }
 
-# --- FUNÇÕES DO ROBÔ (sem alterações na lógica de envio) ---
+# --- FUNÇÕES DO ROBÔ ---
 
 def carregar_memoria():
     try:
@@ -62,33 +57,70 @@ def salvar_memoria(memoria_atualizada):
 def format_chapter_number(num_float):
     return str(int(num_float)) if num_float.is_integer() else str(num_float)
 
-def enviar_anuncio_discord(titulo, capitulo, link_capitulo, imagem_obra, role_id, webhook_url, is_vip=False):
+# MUDANÇA: Nova função para formatar o título como na imagem
+def format_chapter_for_title(num_float):
+    """Formata '8.0' para 'Capítulo 8 - 008'"""
+    int_part = int(num_float)
+    padded_part = str(int_part).zfill(3)
+    return f"Capítulo {int_part} - {padded_part}"
+
+def enviar_anuncio_discord(titulo_obra, capitulo_formatado, link_capitulo, role_id, webhook_url, is_vip=False):
     if not webhook_url: return
-    description = f"Um novo capítulo já está disponível!\n\n**Leia agora:** [Clique aqui]({link_capitulo})"
-    if is_vip: description += "\n\n🔔 **Obra VIP:** Disponível para todos em 24 horas!"
-    embed = {"title": f"🔥 {titulo} - {capitulo} 🔥", "description": description, "url": link_capitulo, "color": 5814783, "thumbnail": {"url": imagem_obra}}
-    payload = {"username": "Anunciador Gato Toons", "avatar_url": "https://i.imgur.com/cgZ6dRC.jpeg", "embeds": [embed]}
-    if role_id and isinstance(role_id, str) and role_id.isdigit(): payload["content"] = f"<@&{role_id}>"
+    
+    # MUDANÇA: Descrição e título formatados como na imagem
+    titulo_embed = f"🔥 {titulo_obra} - {capitulo_formatado} 🔥"
+    description = (
+        "Um novo capítulo já está disponível no site!\n\n"
+        f"**Leia agora:** [Clique aqui]({link_capitulo})"
+    )
+    if is_vip:
+        description += "\n\n🔔 **Obra Vip** — disponível para todos em **2 dias**!"
+
+    embed = {
+        "title": titulo_embed,
+        "description": description,
+        "url": link_capitulo,
+        "color": 3447003 # Cor azulada do Discord
+    }
+    payload = {
+        "username": "Anunciador Gato Toons",
+        "avatar_url": "https://i.imgur.com/cgZ6dRC.jpeg",
+        "embeds": [embed]
+    }
+    # MUDANÇA: O 'content' agora só contém a menção ao cargo
+    if role_id and isinstance(role_id, str) and role_id.isdigit():
+        payload["content"] = f"<@&{role_id}>"
+
     try:
         requests.post(webhook_url, json=payload, timeout=10).raise_for_status()
-        print(f"Anúncio (Único) enviado: {titulo} - {capitulo}")
+        print(f"Anúncio (Único) enviado: {titulo_obra} - {capitulo_formatado}")
     except requests.exceptions.RequestException as e: print(f"Erro ao enviar anúncio único: {e}")
 
-def enviar_anuncio_massivo(titulo, novos_capitulos, imagem_obra, role_id, webhook_url, is_vip=False):
+def enviar_anuncio_massivo(titulo_obra, novos_capitulos, role_id, webhook_url, is_vip=False):
     if not webhook_url: return
     capitulos_ordenados = sorted(novos_capitulos, key=lambda x: x[0])
     primeiro_cap_num = format_chapter_number(capitulos_ordenados[0][0])
     ultimo_cap_num = format_chapter_number(capitulos_ordenados[-1][0])
     link_ultimo_capitulo = capitulos_ordenados[-1][1]
+    
+    # MUDANÇA: Título e Descrição para anúncio em massa no novo estilo
     titulo_anuncio = f"Capítulos {primeiro_cap_num} ao {ultimo_cap_num}"
-    description = f"Vários capítulos novos disponíveis!\n\n**Leia o último capítulo:** [Clique aqui]({link_ultimo_capitulo})"
-    if is_vip: description += "\n\n🔔 **Obra VIP:** Disponível para todos em 24 horas!"
-    embed = {"title": f"🔥 {titulo} - {titulo_anuncio} 🔥", "description": description, "url": link_ultimo_capitulo, "color": 5814783, "thumbnail": {"url": imagem_obra}}
+    titulo_embed = f"🔥 {titulo_obra} - {titulo_anuncio} 🔥"
+    description = (
+        "Vários capítulos novos disponíveis no site!\n\n"
+        f"**Leia o último agora:** [Clique aqui]({link_ultimo_capitulo})"
+    )
+    if is_vip:
+        description += "\n\n🔔 **Obra Vip** — disponível para todos em **2 dias**!"
+
+    embed = {"title": titulo_embed, "description": description, "url": link_ultimo_capitulo, "color": 3447003}
     payload = {"username": "Anunciador Gato Toons", "avatar_url": "https://i.imgur.com/cgZ6dRC.jpeg", "embeds": [embed]}
-    if role_id and isinstance(role_id, str) and role_id.isdigit(): payload["content"] = f"<@&{role_id}>"
+    if role_id and isinstance(role_id, str) and role_id.isdigit():
+        payload["content"] = f"<@&{role_id}>"
+
     try:
         requests.post(webhook_url, json=payload, timeout=10).raise_for_status()
-        print(f"Anúncio (Massa) enviado: {titulo} - {titulo_anuncio}")
+        print(f"Anúncio (Massa) enviado: {titulo_obra} - {titulo_anuncio}")
     except requests.exceptions.RequestException as e: print(f"Erro ao enviar anúncio em massa: {e}")
 
 def enviar_anuncio_parceiro(nome_obra, link_capitulo, scan_role_id, webhook_url):
@@ -104,8 +136,7 @@ def main():
     print("Iniciando verificação de lançamentos via API...")
     memoria_de_lancamentos = carregar_memoria()
     primeira_execucao = not memoria_de_lancamentos
-    if primeira_execucao:
-        print("PRIMEIRA EXECUÇÃO: Populando memória inicial...")
+    if primeira_execucao: print("PRIMEIRA EXECUÇÃO: Populando memória inicial...")
     
     novos_links_encontrados = set()
 
@@ -116,29 +147,20 @@ def main():
             continue
 
         print(f"\nVerificando obra: {role_info.get('nome', 'Desconhecida')}")
-
         try:
-            # <-- MUDANÇA: Fazendo a requisição para a API
             api_url = f"{API_ENDPOINT}{obra_slug}"
             response = requests.get(api_url, headers=HEADERS, timeout=20)
             response.raise_for_status()
             data = response.json()
-            
             if not data.get('success'):
                 print(f"  -> API retornou erro para a obra: {data.get('message', 'Erro desconhecido')}")
                 continue
-
-        except requests.exceptions.RequestException as e:
-            print(f"  -> Erro ao acessar a API da obra: {e}")
-            continue
-        except json.JSONDecodeError:
-            print(f"  -> Erro: A resposta da API não é um JSON válido.")
+        except (requests.exceptions.RequestException, json.JSONDecodeError) as e:
+            print(f"  -> Erro ao acessar ou decodificar API da obra: {e}")
             continue
         
-        # <-- MUDANÇA: Processando os dados do JSON
         obra_details = data.get('obra', {})
         capitulos_api = data.get('capitulos', [])
-        
         if not capitulos_api:
             print("  -> Nenhum capítulo encontrado na resposta da API.")
             continue
@@ -146,17 +168,11 @@ def main():
         novos_capitulos_da_obra = [] 
         for cap in capitulos_api:
             try:
-                # O número do capítulo vem como string, convertemos para float
                 numero_cap = float(cap.get('numero_capitulo'))
                 link_cap = f"{BASE_URL}/leitura.php?obra={obra_slug}&cap={cap.get('numero_capitulo')}"
-                
-                # A API não indica "NOVO" ou "VIP" por capítulo.
-                # A lógica é: se não está na memória, é novo.
                 if link_cap not in memoria_de_lancamentos:
-                    # O status VIP vem do objeto principal da obra
                     is_obra_vip = obra_details.get('is_vip', 0) == 1
                     novos_capitulos_da_obra.append((numero_cap, link_cap, is_obra_vip))
-            
             except (ValueError, TypeError, AttributeError):
                 print(f"  -> Aviso: Dados de capítulo inválidos na API: {cap}")
 
@@ -176,15 +192,13 @@ def main():
                 enviar_anuncio_parceiro(role_info.get("nome"), link, role_info.get("scan_role_id"), webhook_para_usar)
                 time.sleep(1)
         else:
-            imagem_obra = urljoin(BASE_URL, obra_details.get('capa_url', ''))
-            
             if len(novos_capitulos_da_obra) == 1:
                 numero, link, is_vip = novos_capitulos_da_obra[0]
-                capitulo_str = f"Capítulo {format_chapter_number(numero)}"
-                enviar_anuncio_discord(role_info.get("nome"), capitulo_str, link, imagem_obra, role_info.get("id"), webhook_para_usar, is_vip=is_vip)
+                capitulo_formatado = format_chapter_for_title(numero)
+                enviar_anuncio_discord(role_info.get("nome"), capitulo_formatado, link, role_info.get("id"), webhook_para_usar, is_vip=is_vip)
             else:
                 anuncio_e_vip = any(cap[2] for cap in novos_capitulos_da_obra)
-                enviar_anuncio_massivo(role_info.get("nome"), novos_capitulos_da_obra, imagem_obra, role_info.get("id"), webhook_para_usar, is_vip=anuncio_e_vip)
+                enviar_anuncio_massivo(role_info.get("nome"), novos_capitulos_da_obra, role_info.get("id"), webhook_para_usar, is_vip=anuncio_e_vip)
         
         time.sleep(2)
 
