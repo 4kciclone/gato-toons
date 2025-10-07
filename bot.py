@@ -116,7 +116,7 @@ def enviar_anuncio_parceiro_massivo(nome_obra, novos_capitulos, obra_slug, scan_
     primeiro_cap_num = format_chapter_number(capitulos_ordenados[0][0])
     ultimo_cap_num = format_chapter_number(capitulos_ordenados[-1][0])
     link_da_obra = f"{BASE_URL}/obra.php?slug={obra_slug}"
-    mensagem = f"<@&{scan_role_id}> acaba de lançar os capítulos **{primeiro_cap_num}** ao **{ultimo_cap_num}** de **{nome_obra}**!\n\n**Confira na página da obra:** {link_da_obra}\n🎉 Novo Lançamento de Parceiro! 🎉"
+    mensagem = f"<@&{scan_role_id}> Postados os capítulos **{primeiro_cap_num}** ao **{ultimo_cap_num}** de **{nome_obra}**!\n\n**Confira na página da obra:** {link_da_obra}\n🎉 Novo Lançamento de Parceiro! 🎉"
     payload = {"username": "Anunciador de Parcerias", "avatar_url": "https://i.imgur.com/cgZ6dRC.jpeg", "content": mensagem}
     try:
         requests.post(webhook_url, json=payload, timeout=10).raise_for_status()
