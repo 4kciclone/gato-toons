@@ -2,40 +2,46 @@ name: Verificador de Lançamentos Gato Toons
 
 on:
   schedule:
-    # Roda a cada 15 minutos
+    # Roda a cada 15 minutos (sinta-se à vontade para ajustar)
+    # Nota: Ações do GitHub podem ter pequenos atrasos.
     - cron: '*/15 * * * *'
-  workflow_dispatch: # Permite rodar manualmente para testes
+  workflow_dispatch: # Permite rodar manualmente pela aba "Actions" para testes
 
 jobs:
   verificar:
     runs-on: ubuntu-latest
     steps:
-      # 1. Baixa o código do repositório para a máquina virtual
+      # 1. Baixa o código do seu repositório para a máquina virtual
       - name: Baixar o código
         uses: actions/checkout@v4
 
-      # 2. Configura o ambiente Python
+      # 2. Configura o ambiente Python na versão especificada
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # 3. Instala as ferramentas (requests, beautifulsoup4)
+      # 3. Instala as bibliotecas Python necessárias listadas no requirements.txt
       - name: Instalar dependências
         run: pip install -r requirements.txt
 
       # 4. Executa o nosso robô!
       - name: Rodar o Scraper
+        # <-- MUDANÇA PRINCIPAL AQUI
+        # Fornecemos os DOIS secrets que o script Python espera.
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_CANAL_PRINCIPAL: ${{ secrets.DISCORD_WEBHOOK_CANAL_PRINCIPAL }}
+          DISCORD_WEBHOOK_CANAL_SECUNDARIO: ${{ secrets.DISCORD_WEBHOOK_CANAL_SECUNDARIO }}
+        # Certifique-se de que o nome do seu arquivo Python é 'bot.py'
         run: python bot.py
 
-      # 5. Salva a memória atualizada de volta no repositório
+      # 5. Salva o arquivo de memória (lancados.json) de volta no repositório
+      # Esta etapa é crucial para que o bot lembre o que já foi anunciado.
       - name: Salvar a memória (lancados.json)
         run: |
           git config --global user.name 'GitHub Actions Bot'
           git config --global user.email 'actions@github.com'
           git add lancados.json
-          # Apenas faz o commit se houver alguma mudança no arquivo
+          # Apenas faz o commit se houver alguma mudança real no arquivo
           git diff --staged --quiet || git commit -m "📝 Atualiza a lista de capítulos lançados"
           git push
