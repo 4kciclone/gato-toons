@@ -8,16 +8,24 @@ from urllib.parse import urljoin
 BASE_URL = "https://gatotoons.online"
 API_ENDPOINT = "https://gatotoons.online/api/obras/detalhes.php?slug="
 
+# MUDANÇA AQUI: Adicionei os dois slugs que estavam faltando e removi duplicatas.
 SLUGS_DAS_OBRAS = [
-    "espinhos-de-calor", "quando-a-filha-da-bruxa-acaba-com-a-maldi-o-do-protagonista-masculino",
-    "meu-corpo-foi-possu-do-por-algu-m", "conquistando-masmorras-com-copiar-e-colar",
-    "caminhante-do-reino-espiritual", "regress-o-da-espada-destruidora",
-    "para-meu-rude-homem-com-m-ltiplas-personalidades", "invocador-solit-rio-de-n-vel-sss",
+    "espinhos-de-calor",
+    "quando-a-filha-da-bruxa-acaba-com-a-maldi-o-do-protagonista-masculino",
+    "meu-corpo-foi-possu-do-por-algu-m",
+    "conquistando-masmorras-com-copiar-e-colar",
+    "caminhante-do-reino-espiritual",
+    "regress-o-da-espada-destruidora",
+    "para-meu-rude-homem-com-m-ltiplas-personalidades",
+    "invocador-solit-rio-de-n-vel-sss",
     "poderes-perdidos-restaurados-desbloqueando-uma-nova-habilidade-todos-os-dias",
-    "o-suporte-faz-tudo", "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente-",
+    "o-suporte-faz-tudo",
+    "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente-",
     "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas",
-    "regress-o-da-espada-destruidora"
+    "a-99a-vida-do-aventureiro-mais-fraco-o-caminho-mais-rapido-do-mais-fraco-ao-mais-forte", # <--- Adicionado
+    "o-sr-empregada-do-caf-clover"  # <--- Adicionado
 ]
+
 
 OBRA_ROLE_MAP = {
     "invocador-solit-rio-de-n-vel-sss": { "id": "1415075549877112953", "nome": "Invocador Solitário de Nível SSS", "canal_destino": "CANAL_PRINCIPAL" },
@@ -74,21 +82,16 @@ def enviar_anuncio_discord(titulo_obra, capitulo_formatado, link_capitulo, role_
         print(f"Anúncio (Único) enviado: {titulo_obra} - {capitulo_formatado}")
     except requests.exceptions.RequestException as e: print(f"Erro ao enviar anúncio único: {e}")
 
-# MUDANÇA AQUI
 def enviar_anuncio_massivo(titulo_obra, novos_capitulos, obra_slug, role_id, webhook_url, is_vip=False):
     if not webhook_url: return
     capitulos_ordenados = sorted(novos_capitulos, key=lambda x: x[0])
     primeiro_cap_num = format_chapter_number(capitulos_ordenados[0][0])
     ultimo_cap_num = format_chapter_number(capitulos_ordenados[-1][0])
-    
-    # Gera o link para a página principal da obra
     link_da_obra = f"{BASE_URL}/obra.php?slug={obra_slug}"
-    
     titulo_anuncio = f"Capítulos {primeiro_cap_num} ao {ultimo_cap_num}"
     titulo_embed = f"🔥 {titulo_obra} - {titulo_anuncio} 🔥"
     description = f"Vários capítulos novos disponíveis no site!\n\n**Confira na página da obra:** [Clique aqui]({link_da_obra})"
     if is_vip: description += "\n\n🔔 **Obra Vip** — disponível para todos em **2 dias**!"
-    
     embed = {"title": titulo_embed, "description": description, "url": link_da_obra, "color": 3447003}
     payload = {"username": "Anunciador Gato Toons", "avatar_url": "https://i.imgur.com/cgZ6dRC.jpeg", "embeds": [embed]}
     if role_id and isinstance(role_id, str) and role_id.isdigit(): payload["content"] = f"<@&{role_id}>"
@@ -107,16 +110,12 @@ def enviar_anuncio_parceiro(nome_obra, num_capitulo, link_capitulo, scan_role_id
         print(f"Anúncio (Parceiro Único) enviado: {nome_obra} Cap {capitulo_str}")
     except requests.exceptions.RequestException as e: print(f"Erro ao enviar anúncio de parceiro: {e}")
 
-# MUDANÇA AQUI
 def enviar_anuncio_parceiro_massivo(nome_obra, novos_capitulos, obra_slug, scan_role_id, webhook_url):
     if not webhook_url: return
     capitulos_ordenados = sorted(novos_capitulos, key=lambda x: x[0])
     primeiro_cap_num = format_chapter_number(capitulos_ordenados[0][0])
     ultimo_cap_num = format_chapter_number(capitulos_ordenados[-1][0])
-    
-    # Gera o link para a página principal da obra
     link_da_obra = f"{BASE_URL}/obra.php?slug={obra_slug}"
-    
     mensagem = f"<@&{scan_role_id}> acaba de lançar os capítulos **{primeiro_cap_num}** ao **{ultimo_cap_num}** de **{nome_obra}**!\n\n**Confira na página da obra:** {link_da_obra}\n🎉 Novo Lançamento de Parceiro! 🎉"
     payload = {"username": "Anunciador de Parcerias", "avatar_url": "https://i.imgur.com/cgZ6dRC.jpeg", "content": mensagem}
     try:
@@ -184,7 +183,6 @@ def main():
                 numero, link, _ = novos_capitulos_da_obra[0]
                 enviar_anuncio_parceiro(role_info.get("nome"), numero, link, role_info.get("scan_role_id"), webhook_para_usar)
             else:
-                # MUDANÇA AQUI
                 enviar_anuncio_parceiro_massivo(role_info.get("nome"), novos_capitulos_da_obra, obra_slug, role_info.get("scan_role_id"), webhook_para_usar)
         else:
             if len(novos_capitulos_da_obra) == 1:
@@ -192,7 +190,6 @@ def main():
                 capitulo_formatado = format_chapter_for_title(numero)
                 enviar_anuncio_discord(role_info.get("nome"), capitulo_formatado, link, role_info.get("id"), webhook_para_usar, is_vip=is_vip)
             else:
-                # MUDANÇA AQUI
                 anuncio_e_vip = any(cap[2] for cap in novos_capitulos_da_obra)
                 enviar_anuncio_massivo(role_info.get("nome"), novos_capitulos_da_obra, obra_slug, role_info.get("id"), webhook_para_usar, is_vip=anuncio_e_vip)
         
