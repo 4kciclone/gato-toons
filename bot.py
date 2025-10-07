@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 BASE_URL = "https://gatotoons.online"
 API_ENDPOINT = "https://gatotoons.online/api/obras/detalhes.php?slug="
 
-# MUDANÇA AQUI: Adicionei os dois slugs que estavam faltando e removi duplicatas.
+# MUDANÇA AQUI: Lista de slugs corrigida e completa.
 SLUGS_DAS_OBRAS = [
     "espinhos-de-calor",
     "quando-a-filha-da-bruxa-acaba-com-a-maldi-o-do-protagonista-masculino",
@@ -22,10 +22,9 @@ SLUGS_DAS_OBRAS = [
     "o-suporte-faz-tudo",
     "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente-",
     "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas",
-    "a-99a-vida-do-aventureiro-mais-fraco-o-caminho-mais-rapido-do-mais-fraco-ao-mais-forte", # <--- Adicionado
-    "o-sr-empregada-do-caf-clover"  # <--- Adicionado
+    "a-99-vida-do-aventureiro-mais-fraco-o-caminho-mais-r-pido-do-mais-fraco-ao-mais-forte", # <--- Corrigido
+    "o-sr-empregada-do-caf-clover" # <--- Adicionado
 ]
-
 
 OBRA_ROLE_MAP = {
     "invocador-solit-rio-de-n-vel-sss": { "id": "1415075549877112953", "nome": "Invocador Solitário de Nível SSS", "canal_destino": "CANAL_PRINCIPAL" },
@@ -35,7 +34,8 @@ OBRA_ROLE_MAP = {
     "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas": { "id": "1415073241399300227", "nome": "Login 30 Dias", "canal_destino": "CANAL_PRINCIPAL" },
     "o-suporte-faz-tudo": { "id": "1416800403835720014", "nome": "O Suporte Faz Tudo", "canal_destino": "CANAL_PRINCIPAL" },
     "caminhante-do-reino-espiritual": { "id": "1418317864359690262", "nome": "Caminhante do Reino Espiritual", "canal_destino": "CANAL_PRINCIPAL" },
-    "a-99a-vida-do-aventureiro-mais-fraco-o-caminho-mais-rapido-do-mais-fraco-ao-mais-forte": { "id": "1418318233936597183", "nome": "99ª Vida do Aventureiro Mais Fraco", "canal_destino": "CANAL_PRINCIPAL" },
+    # MUDANÇA AQUI: Slug corrigido para corresponder à lista.
+    "a-99-vida-do-aventureiro-mais-fraco-o-caminho-mais-r-pido-do-mais-fraco-ao-mais-forte": { "id": "1418318233936597183", "nome": "99ª Vida do Aventureiro Mais Fraco", "canal_destino": "CANAL_PRINCIPAL" },
     "regress-o-da-espada-destruidora": { "id": "1425128273444081807", "nome": "Regressão da Espada Destruidora", "canal_destino": "CANAL_PRINCIPAL" },
     "espinhos-de-calor": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Espinhos de Calor", "canal_destino": "CANAL_SECUNDARIO" },
     "meu-corpo-foi-possu-do-por-algu-m": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Meu Corpo foi Possuído por Alguém", "canal_destino": "CANAL_SECUNDARIO" },
