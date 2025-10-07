@@ -202,17 +202,15 @@ def main():
     soup = BeautifulSoup(response.text, 'html.parser')
     secao_atualizados = soup.select_one("#lista-obras-atualizadas")
     if not secao_atualizados:
-        print("Não foi possível encontrar a seção 'Recentemente Atualizados'. Verificação abortada.")
+        print("Não foi possível encontrar a seção de obras atualizadas (ID #lista-obras-atualizadas). A estrutura do site pode ter mudado.")
         return
 
     todos_os_cards = secao_atualizados.select(".obra-item")
     print(f"Encontrados {len(todos_os_cards)} cards de obras na seção de atualizados.")
 
     for obra_card in todos_os_cards:
-        # Lista para agrupar capítulos novos de uma mesma obra
         novos_capitulos_da_obra = [] 
 
-        # Extrai o 'slug' da obra para identificá-la no mapa
         obra_link_tag = obra_card.select_one("a")
         obra_slug = ""
         if obra_link_tag and 'href' in obra_link_tag.attrs:
@@ -227,9 +225,7 @@ def main():
 
         print(f"\nVerificando obra: {role_info.get('nome', 'Desconhecida')}")
         
-        # Itera sobre todos os capítulos listados no card
         for cap_tag in obra_card.select("ul.chapter-info a.chapter-entry"):
-            # Procura pelo selo "NOVO" para identificar um lançamento
             if not cap_tag.select_one("span.badge.bg-success"):
                 continue
 
@@ -237,38 +233,30 @@ def main():
 
             if link_completo not in memoria_de_lancamentos:
                 try:
-                    # Extrai o número do capítulo para ordenação e formatação
                     num_str = cap_tag.select_one('span.text-truncate').text.strip().lower().replace('cap ', '')
                     numero_cap = float(num_str)
                     novos_capitulos_da_obra.append((numero_cap, link_completo))
                 except (ValueError, AttributeError):
                     print(f"  -> Aviso: Não foi possível extrair o número do capítulo do link: {link_completo}")
 
-        # Se não encontrou capítulos novos para esta obra, vai para a próxima
         if not novos_capitulos_da_obra:
             continue
-
-        # Adiciona todos os links encontrados à memória para não anunciar de novo
+        
         links_para_salvar = [link for _, link in novos_capitulos_da_obra]
         novos_links_encontrados.update(links_para_salvar)
 
-        # Na primeira execução, o script apenas salva os links na memória e não anuncia
         if primeira_execucao:
             continue
 
         print(f"  -> DETECTADO(S) {len(novos_capitulos_da_obra)} NOVO(S) CAPÍTULO(S)!")
-
-        # Decide qual tipo de anúncio fazer
         destino = role_info.get("canal_destino")
         webhook_para_usar = WEBHOOK_URLS.get(destino)
 
         if role_info.get("parceiro"):
-            # Para parceiros, anuncia cada capítulo individualmente para dar visibilidade
             for _, link in novos_capitulos_da_obra:
                 enviar_anuncio_parceiro(role_info.get("nome"), link, role_info.get("scan_role_id"), webhook_para_usar)
                 time.sleep(1)
         else:
-            # Para obras principais, decide entre anúncio único ou em massa
             imagem_obra_tag = obra_card.select_one('img.card-img-top')
             imagem_obra = urljoin(HOME_URL, imagem_obra_tag['src']) if imagem_obra_tag else ""
             
@@ -279,9 +267,8 @@ def main():
             else:
                 enviar_anuncio_massivo(role_info.get("nome"), novos_capitulos_da_obra, imagem_obra, role_info.get("id"), webhook_para_usar)
         
-        time.sleep(2) # Pausa entre o processamento de obras diferentes
+        time.sleep(2)
 
-    # Salva todos os novos links encontrados na memória de uma só vez
     if novos_links_encontrados:
         memoria_final = memoria_de_lancamentos.union(novos_links_encontrados)
         salvar_memoria(memoria_final)
