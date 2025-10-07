@@ -8,7 +8,6 @@ from urllib.parse import urljoin
 BASE_URL = "https://gatotoons.online"
 API_ENDPOINT = "https://gatotoons.online/api/obras/detalhes.php?slug="
 
-# Lista de slugs de cada obra a ser monitorada.
 SLUGS_DAS_OBRAS = [
     "espinhos-de-calor", "quando-a-filha-da-bruxa-acaba-com-a-maldi-o-do-protagonista-masculino",
     "meu-corpo-foi-possu-do-por-algu-m", "conquistando-masmorras-com-copiar-e-colar",
@@ -17,7 +16,7 @@ SLUGS_DAS_OBRAS = [
     "poderes-perdidos-restaurados-desbloqueando-uma-nova-habilidade-todos-os-dias",
     "o-suporte-faz-tudo", "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente-",
     "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas",
-    "regress-o-da-espada-destruidora";
+    "regress-o-da-espada-destruidora"
 ]
 
 OBRA_ROLE_MAP = {
@@ -57,80 +56,73 @@ def salvar_memoria(memoria_atualizada):
 def format_chapter_number(num_float):
     return str(int(num_float)) if num_float.is_integer() else str(num_float)
 
-# MUDANÇA: Nova função para formatar o título como na imagem
 def format_chapter_for_title(num_float):
-    """Formata '8.0' para 'Capítulo 8 - 008'"""
     int_part = int(num_float)
     padded_part = str(int_part).zfill(3)
     return f"Capítulo {int_part} - {padded_part}"
 
 def enviar_anuncio_discord(titulo_obra, capitulo_formatado, link_capitulo, role_id, webhook_url, is_vip=False):
     if not webhook_url: return
-    
-    # MUDANÇA: Descrição e título formatados como na imagem
     titulo_embed = f"🔥 {titulo_obra} - {capitulo_formatado} 🔥"
-    description = (
-        "Um novo capítulo já está disponível no site!\n\n"
-        f"**Leia agora:** [Clique aqui]({link_capitulo})"
-    )
-    if is_vip:
-        description += "\n\n🔔 **Obra Vip** — disponível para todos em **2 dias**!"
-
-    embed = {
-        "title": titulo_embed,
-        "description": description,
-        "url": link_capitulo,
-        "color": 3447003 # Cor azulada do Discord
-    }
-    payload = {
-        "username": "Anunciador Gato Toons",
-        "avatar_url": "https://i.imgur.com/cgZ6dRC.jpeg",
-        "embeds": [embed]
-    }
-    # MUDANÇA: O 'content' agora só contém a menção ao cargo
-    if role_id and isinstance(role_id, str) and role_id.isdigit():
-        payload["content"] = f"<@&{role_id}>"
-
+    description = f"Um novo capítulo já está disponível no site!\n\n**Leia agora:** [Clique aqui]({link_capitulo})"
+    if is_vip: description += "\n\n🔔 **Obra Vip** — disponível para todos em **2 dias**!"
+    embed = {"title": titulo_embed, "description": description, "url": link_capitulo, "color": 3447003}
+    payload = {"username": "Anunciador Gato Toons", "avatar_url": "https://i.imgur.com/cgZ6dRC.jpeg", "embeds": [embed]}
+    if role_id and isinstance(role_id, str) and role_id.isdigit(): payload["content"] = f"<@&{role_id}>"
     try:
         requests.post(webhook_url, json=payload, timeout=10).raise_for_status()
         print(f"Anúncio (Único) enviado: {titulo_obra} - {capitulo_formatado}")
     except requests.exceptions.RequestException as e: print(f"Erro ao enviar anúncio único: {e}")
 
-def enviar_anuncio_massivo(titulo_obra, novos_capitulos, role_id, webhook_url, is_vip=False):
+# MUDANÇA AQUI
+def enviar_anuncio_massivo(titulo_obra, novos_capitulos, obra_slug, role_id, webhook_url, is_vip=False):
     if not webhook_url: return
     capitulos_ordenados = sorted(novos_capitulos, key=lambda x: x[0])
     primeiro_cap_num = format_chapter_number(capitulos_ordenados[0][0])
     ultimo_cap_num = format_chapter_number(capitulos_ordenados[-1][0])
-    link_ultimo_capitulo = capitulos_ordenados[-1][1]
     
-    # MUDANÇA: Título e Descrição para anúncio em massa no novo estilo
+    # Gera o link para a página principal da obra
+    link_da_obra = f"{BASE_URL}/obra.php?slug={obra_slug}"
+    
     titulo_anuncio = f"Capítulos {primeiro_cap_num} ao {ultimo_cap_num}"
     titulo_embed = f"🔥 {titulo_obra} - {titulo_anuncio} 🔥"
-    description = (
-        "Vários capítulos novos disponíveis no site!\n\n"
-        f"**Leia o último agora:** [Clique aqui]({link_ultimo_capitulo})"
-    )
-    if is_vip:
-        description += "\n\n🔔 **Obra Vip** — disponível para todos em **2 dias**!"
-
-    embed = {"title": titulo_embed, "description": description, "url": link_ultimo_capitulo, "color": 3447003}
+    description = f"Vários capítulos novos disponíveis no site!\n\n**Confira na página da obra:** [Clique aqui]({link_da_obra})"
+    if is_vip: description += "\n\n🔔 **Obra Vip** — disponível para todos em **2 dias**!"
+    
+    embed = {"title": titulo_embed, "description": description, "url": link_da_obra, "color": 3447003}
     payload = {"username": "Anunciador Gato Toons", "avatar_url": "https://i.imgur.com/cgZ6dRC.jpeg", "embeds": [embed]}
-    if role_id and isinstance(role_id, str) and role_id.isdigit():
-        payload["content"] = f"<@&{role_id}>"
-
+    if role_id and isinstance(role_id, str) and role_id.isdigit(): payload["content"] = f"<@&{role_id}>"
     try:
         requests.post(webhook_url, json=payload, timeout=10).raise_for_status()
         print(f"Anúncio (Massa) enviado: {titulo_obra} - {titulo_anuncio}")
     except requests.exceptions.RequestException as e: print(f"Erro ao enviar anúncio em massa: {e}")
 
-def enviar_anuncio_parceiro(nome_obra, link_capitulo, scan_role_id, webhook_url):
+def enviar_anuncio_parceiro(nome_obra, num_capitulo, link_capitulo, scan_role_id, webhook_url):
     if not webhook_url: return
-    mensagem = f"🎉 **Novo Lançamento de Parceiro!** 🎉\n\n<@&{scan_role_id}> acaba de lançar um novo capítulo de **{nome_obra}**!\n\n**Leia agora:** {link_capitulo}"
+    capitulo_str = format_chapter_number(num_capitulo)
+    mensagem = f"<@&{scan_role_id}> acaba de lançar o capítulo **{capitulo_str}** de **{nome_obra}**!\n\n**Leia agora:** {link_capitulo}\n🎉 Novo Lançamento de Parceiro! 🎉"
     payload = {"username": "Anunciador de Parcerias", "avatar_url": "https://i.imgur.com/cgZ6dRC.jpeg", "content": mensagem}
     try:
         requests.post(webhook_url, json=payload, timeout=10).raise_for_status()
-        print(f"Anúncio (Parceiro) enviado: {nome_obra}")
+        print(f"Anúncio (Parceiro Único) enviado: {nome_obra} Cap {capitulo_str}")
     except requests.exceptions.RequestException as e: print(f"Erro ao enviar anúncio de parceiro: {e}")
+
+# MUDANÇA AQUI
+def enviar_anuncio_parceiro_massivo(nome_obra, novos_capitulos, obra_slug, scan_role_id, webhook_url):
+    if not webhook_url: return
+    capitulos_ordenados = sorted(novos_capitulos, key=lambda x: x[0])
+    primeiro_cap_num = format_chapter_number(capitulos_ordenados[0][0])
+    ultimo_cap_num = format_chapter_number(capitulos_ordenados[-1][0])
+    
+    # Gera o link para a página principal da obra
+    link_da_obra = f"{BASE_URL}/obra.php?slug={obra_slug}"
+    
+    mensagem = f"<@&{scan_role_id}> acaba de lançar os capítulos **{primeiro_cap_num}** ao **{ultimo_cap_num}** de **{nome_obra}**!\n\n**Confira na página da obra:** {link_da_obra}\n🎉 Novo Lançamento de Parceiro! 🎉"
+    payload = {"username": "Anunciador de Parcerias", "avatar_url": "https://i.imgur.com/cgZ6dRC.jpeg", "content": mensagem}
+    try:
+        requests.post(webhook_url, json=payload, timeout=10).raise_for_status()
+        print(f"Anúncio (Parceiro em Massa) enviado: {nome_obra} Caps {primeiro_cap_num}-{ultimo_cap_num}")
+    except requests.exceptions.RequestException as e: print(f"Erro ao enviar anúncio de parceiro em massa: {e}")
 
 def main():
     print("Iniciando verificação de lançamentos via API...")
@@ -188,17 +180,21 @@ def main():
         webhook_para_usar = WEBHOOK_URLS.get(destino)
 
         if role_info.get("parceiro"):
-            for _, link, _ in novos_capitulos_da_obra:
-                enviar_anuncio_parceiro(role_info.get("nome"), link, role_info.get("scan_role_id"), webhook_para_usar)
-                time.sleep(1)
+            if len(novos_capitulos_da_obra) == 1:
+                numero, link, _ = novos_capitulos_da_obra[0]
+                enviar_anuncio_parceiro(role_info.get("nome"), numero, link, role_info.get("scan_role_id"), webhook_para_usar)
+            else:
+                # MUDANÇA AQUI
+                enviar_anuncio_parceiro_massivo(role_info.get("nome"), novos_capitulos_da_obra, obra_slug, role_info.get("scan_role_id"), webhook_para_usar)
         else:
             if len(novos_capitulos_da_obra) == 1:
                 numero, link, is_vip = novos_capitulos_da_obra[0]
                 capitulo_formatado = format_chapter_for_title(numero)
                 enviar_anuncio_discord(role_info.get("nome"), capitulo_formatado, link, role_info.get("id"), webhook_para_usar, is_vip=is_vip)
             else:
+                # MUDANÇA AQUI
                 anuncio_e_vip = any(cap[2] for cap in novos_capitulos_da_obra)
-                enviar_anuncio_massivo(role_info.get("nome"), novos_capitulos_da_obra, role_info.get("id"), webhook_para_usar, is_vip=anuncio_e_vip)
+                enviar_anuncio_massivo(role_info.get("nome"), novos_capitulos_da_obra, obra_slug, role_info.get("id"), webhook_para_usar, is_vip=anuncio_e_vip)
         
         time.sleep(2)
 
