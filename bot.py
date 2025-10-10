@@ -42,7 +42,7 @@ OBRA_ROLE_MAP = {
     "meu-corpo-foi-possu-do-por-algu-m": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Meu Corpo foi Possuído por Alguém", "canal_destino": "CANAL_SECUNDARIO" },
     "o-sr-empregada-do-caf-clover": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "O Sr. Empregada do Café Clover", "canal_destino": "CANAL_SECUNDARIO" },
     "para-meu-rude-homem-com-m-ltiplas-personalidades": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Para meu Rude Homem com Múltiplas Personalidades", "canal_destino": "CANAL_SECUNDARIO" },
-    "quando-a-filha-da-bruxa-acaba-com-a-maldi-o-do-protagonista-masculino": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Quando a Filha da Bruxa acaba com a Maldição do Protagonista Masculino", "canal_destino": "CANAL_SECUNDARIO" }
+    "quando-a-filha-da-bruxa-acaba-com-a-maldi-o-do-protagonista-masculino": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Quando a Filha da Bruxa acaba com a Maldição do Protagonista Masculino", "canal_destino": "CANAL_SECUNDARIO" },
     "sobrevivendo-como-uma-empregada-em-um-jogo-de-terror-18": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Sobrevivendo como uma Empregada em um Jogo de Terror +18", "canal_destino": "CANAL_SECUNDARIO" }
 
 }
