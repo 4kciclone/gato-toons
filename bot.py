@@ -24,7 +24,8 @@ SLUGS_DAS_OBRAS = [
     "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas",
     "a-99-vida-do-aventureiro-mais-fraco-o-caminho-mais-r-pido-do-mais-fraco-ao-mais-forte", # <--- Corrigido
     "o-sr-empregada-do-caf-clover", # <--- Adicionado
-    "sobrevivendo-como-uma-empregada-em-um-jogo-de-terror-18"
+    "sobrevivendo-como-uma-empregada-em-um-jogo-de-terror-18",
+    "eu-n-o-te-salvei-para-ser-pedida-em-casamento"
 ]
 
 OBRA_ROLE_MAP = {
@@ -41,6 +42,7 @@ OBRA_ROLE_MAP = {
     "espinhos-de-calor": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Espinhos de Calor", "canal_destino": "CANAL_SECUNDARIO" },
     "meu-corpo-foi-possu-do-por-algu-m": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Meu Corpo foi Possuído por Alguém", "canal_destino": "CANAL_SECUNDARIO" },
     "o-sr-empregada-do-caf-clover": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "O Sr. Empregada do Café Clover", "canal_destino": "CANAL_SECUNDARIO" },
+    "eu-n-o-te-salvei-para-ser-pedida-em-casamento": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Sobrevivendo como uma Empregada em um Jogo de Terror +18", "canal_destino": "CANAL_SECUNDARIO" }
     "para-meu-rude-homem-com-m-ltiplas-personalidades": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Para meu Rude Homem com Múltiplas Personalidades", "canal_destino": "CANAL_SECUNDARIO" },
     "quando-a-filha-da-bruxa-acaba-com-a-maldi-o-do-protagonista-masculino": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Quando a Filha da Bruxa acaba com a Maldição do Protagonista Masculino", "canal_destino": "CANAL_SECUNDARIO" },
     "sobrevivendo-como-uma-empregada-em-um-jogo-de-terror-18": { "parceiro": True, "scan_role_id": "1425119898023104604", "nome": "Sobrevivendo como uma Empregada em um Jogo de Terror +18", "canal_destino": "CANAL_SECUNDARIO" }
