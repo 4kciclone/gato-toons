@@ -25,7 +25,10 @@ SLUGS_DAS_OBRAS = [
     "a-99-vida-do-aventureiro-mais-fraco-o-caminho-mais-r-pido-do-mais-fraco-ao-mais-forte", # <--- Corrigido
     "o-sr-empregada-do-caf-clover", # <--- Adicionado
     "sobrevivendo-como-uma-empregada-em-um-jogo-de-terror-18",
-    "eu-n-o-te-salvei-para-ser-pedida-em-casamento"
+    "eu-n-o-te-salvei-para-ser-pedida-em-casamento",
+    "quebrador-de-defesa",
+    "apenas-um-imortal",
+    "her-is-dem-nios-e-vil-es"
 ]
 
 OBRA_ROLE_MAP = {
@@ -36,6 +39,9 @@ OBRA_ROLE_MAP = {
     "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas": { "id": "1415073241399300227", "nome": "Login 30 Dias", "canal_destino": "CANAL_PRINCIPAL" },
     "o-suporte-faz-tudo": { "id": "1416800403835720014", "nome": "O Suporte Faz Tudo", "canal_destino": "CANAL_PRINCIPAL" },
     "caminhante-do-reino-espiritual": { "id": "1418317864359690262", "nome": "Caminhante do Reino Espiritual", "canal_destino": "CANAL_PRINCIPAL" },
+    "quebrador-de-defesa": { "id": "1435415847962148935", "nome": "Quebrador de Defesa", "canal_destino": "CANAL_PRINCIPAL" },
+    "her-is-dem-nios-e-vil-es": { "id": "1435415600145895424", "nome": "Heróis, Demônios e Vilões", "canal_destino": "CANAL_PRINCIPAL" },
+    "apenas-um-imortal": { "id": "1435415171769303090", "nome": "Apenas Um Imortal", "canal_destino": "CANAL_PRINCIPAL" },
     # MUDANÇA AQUI: Slug corrigido para corresponder à lista.
     "a-99-vida-do-aventureiro-mais-fraco-o-caminho-mais-r-pido-do-mais-fraco-ao-mais-forte": { "id": "1418318233936597183", "nome": "99ª Vida do Aventureiro Mais Fraco", "canal_destino": "CANAL_PRINCIPAL" },
     "regress-o-da-espada-destruidora": { "id": "1425128273444081807", "nome": "Regressão da Espada Destruidora", "canal_destino": "CANAL_PRINCIPAL" },
