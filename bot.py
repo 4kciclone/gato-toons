@@ -38,7 +38,7 @@ OBRA_ROLE_MAP = {
     "eu-confio-na-minha-invencibilidade-para-causar-toneladas-de-dano-passivamente-": { "id": "1415075156187025539", "nome": "Invencibilidade Passiva", "canal_destino": "CANAL_PRINCIPAL" },
     "depois-de-fazer-login-por-30-dias-posso-aniquilar-estrelas": { "id": "1415073241399300227", "nome": "Login 30 Dias", "canal_destino": "CANAL_PRINCIPAL" },
     "o-suporte-faz-tudo": { "id": "1416800403835720014", "nome": "O Suporte Faz Tudo", "canal_destino": "CANAL_PRINCIPAL" },
-    "caminhante-do-reino-espiritual": { "id": "1418317864359690262", "nome": "Caminhante do Reino Espiritual", "canal_destino": "CANAL_PRINCIPAL" },
+    "caminhante-do-reino-espiritual": { "id": "1435422572685557800", "nome": "Caminhante do Reino Espiritual", "canal_destino": "CANAL_PRINCIPAL" },
     "quebrador-de-defesa": { "id": "1435415847962148935", "nome": "Quebrador de Defesa", "canal_destino": "CANAL_PRINCIPAL" },
     "her-is-dem-nios-e-vil-es": { "id": "1435415600145895424", "nome": "Heróis, Demônios e Vilões", "canal_destino": "CANAL_PRINCIPAL" },
     "apenas-um-imortal": { "id": "1435415171769303090", "nome": "Apenas Um Imortal", "canal_destino": "CANAL_PRINCIPAL" },
